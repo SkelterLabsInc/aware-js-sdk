@@ -1,0 +1,13 @@
+{
+  "name": "aware",
+  "version": "0.2.0",
+  "description": "AIQ.AWARE Javascript SDK",
+  "main": "dist/index.js",
+  "author": "Eunsang Yoo <arthury@skelterlabs.com>",
+  "license": "Apache-2.0",
+  "private": true,
+  "scripts": {
+    "build": "rm -rf dist *.tsbuildinfo && tsc --build tsconfig.json",
+    "build:watch": "tsc --build tsconfig.json --watch"
+  }
+}
