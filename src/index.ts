@@ -1,7 +1,3 @@
-function greeter(person: string) {
-  return "Hello, " + person;
-}
+import AIQAware from './AIQAware'
 
-let user = "Jane User";
-
-document.body.textContent = greeter(user);
+export default AIQAware

@@ -1,5 +1,5 @@
 {
-  "name": "aware",
+  "name": "aware-sdk",
   "version": "0.2.0",
   "description": "AIQ.AWARE Javascript SDK",
   "main": "dist/index.js",
