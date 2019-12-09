@@ -9,5 +9,8 @@
   "scripts": {
     "build": "rm -rf dist *.tsbuildinfo && tsc --build tsconfig.json",
     "build:watch": "tsc --build tsconfig.json --watch"
+  },
+  "dependencies": {
+    "universal-cookie": "^4.0.2"
   }
 }
