@@ -1,10 +1,12 @@
 import Cookies from 'universal-cookie'
+import uuid from 'uuid/v4'
 
 const KEY_PROJECT_ID = 'PROJECT_ID'
 const KEY_APP_ID = 'APP_ID'
 const KEY_API_KEY = 'API_KEY'
 const KEY_AUTH_TOKEN = 'AUTH_TOKEN'
 const KEY_UID = 'UID'
+const KEY_IID = 'IID'
 
 const cookies = new Cookies()
 
@@ -13,6 +15,10 @@ interface User {
   uid: string
 }
 
+// TODO(arthury): Consider to use options of `Cookies.set` and `Cookies.remove`.
+//   See more details: https://github.com/reactivestack/cookies/tree/master/packages/universal-cookie
+//   See also: https://www.npmjs.com/package/cookie
+// TODO(arthury): Use getter/setter of Typescript for variables.
 /**
  * ConfigStore stores all configs of AIQ.AWARE SDK.
  */
@@ -33,6 +39,18 @@ export default class ConfigStore {
     return cookies.get(KEY_AUTH_TOKEN) || ''
   }
 
+  getProjectId (): string {
+    return cookies.get(KEY_PROJECT_ID)
+  }
+
+  getAppId (): string {
+    return cookies.get(KEY_APP_ID)
+  }
+
+  getApiKey (): string {
+    return cookies.get(KEY_API_KEY)
+  }
+
   /**
    * Get `uid` of current user.
    * If the uid does not exist, return empty string.
@@ -41,6 +59,22 @@ export default class ConfigStore {
    */
   getUid (): string {
     return cookies.get(KEY_UID) || ''
+  }
+
+  /**
+   * Get `iid` of current site.
+   * If the iid does not exists, generate new IID for this site.
+   *
+   * @returns IID of this site.
+   */
+  getIid (): string {
+    const iid = cookies.get(KEY_IID) || ''
+    if (iid.length > 0) {
+      return iid
+    }
+    const newIid = `j-${uuid().replace(/-/g, '')}`
+    cookies.set(KEY_IID, newIid)
+    return newIid
   }
 
   /**

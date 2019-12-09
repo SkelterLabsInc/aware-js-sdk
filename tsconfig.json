@@ -12,7 +12,8 @@
     "declaration": true,
     "baseUrl": ".",
     "rootDir": "./src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "resolveJsonModule": true
   },
   "include": [
     "src/**/*.ts"
