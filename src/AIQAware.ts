@@ -28,7 +28,7 @@ export default class AIQAware {
       // TODO(arthury): TimeZone from browser.
       timeZone: 'Asia/Seoul',
       devices: [{
-        iid: this.configStore.getIid(),
+        iid: this.configStore.iid,
         sdk_version: version,
         os_version: bowser.getOSVersion(),
         device_model: bowser.getBrowserName(),
@@ -37,39 +37,39 @@ export default class AIQAware {
     }
   }
 
-  isRegistered () {
-    return this.configStore.getAuthToken().length > 0 && this.configStore.getUid().length > 0
+  get registered (): boolean {
+    return this.configStore.authToken.length > 0 && this.configStore.uid.length > 0
   }
 
   // TODO(arthury): Add `userHint` as a parameter.
   async register (): Promise<string> {
-    if (this.isRegistered()) {
-      return this.configStore.getAuthToken()
+    if (this.registered) {
+      return this.configStore.authToken
     }
     return of(this.makeUser())
       .pipe(
         flatMap(user => from(this.client.register(user, {
-          projectId: this.configStore.getProjectId(),
-          appId: this.configStore.getAppId(),
+          projectId: this.configStore.projectId,
+          appId: this.configStore.appId,
           appType: APP_TYPE,
           // TODO(arthury): After support domain, use window.location.hostname
           androidPackageName: 'custom-signal.com',
-          iid: this.configStore.getIid(),
-          clientSecret: this.configStore.getApiKey(),
+          iid: this.configStore.iid,
+          clientSecret: this.configStore.apiKey,
           // TODO(arthury): Extract language and country code from browser.
           lang: 'ko',
           country: 'KR'
         }))),
         map(user => {
           this.configStore.saveUserConfigs(user)
-          return this.configStore.getAuthToken()
+          return this.configStore.authToken
         })
       )
       .toPromise()
   }
 
   unregister () {
-    if (!this.isRegistered()) {
+    if (!this.registered) {
       return
     }
     this.configStore.clearUserConfigs()

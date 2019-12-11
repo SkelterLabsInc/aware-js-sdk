@@ -18,7 +18,6 @@ interface User {
 // TODO(arthury): Consider to use options of `Cookies.set` and `Cookies.remove`.
 //   See more details: https://github.com/reactivestack/cookies/tree/master/packages/universal-cookie
 //   See also: https://www.npmjs.com/package/cookie
-// TODO(arthury): Use getter/setter of Typescript for variables.
 /**
  * ConfigStore stores all configs of AIQ.AWARE SDK.
  */
@@ -35,19 +34,20 @@ export default class ConfigStore {
    *
    * @returns Authorization token of AIQ.AWARE
    */
-  getAuthToken (): string {
+  get authToken (): string {
     return cookies.get(KEY_AUTH_TOKEN) || ''
   }
 
-  getProjectId (): string {
+  get projectId (): string {
     return cookies.get(KEY_PROJECT_ID)
   }
 
-  getAppId (): string {
+
+  get appId (): string {
     return cookies.get(KEY_APP_ID)
   }
 
-  getApiKey (): string {
+  get apiKey (): string {
     return cookies.get(KEY_API_KEY)
   }
 
@@ -57,7 +57,7 @@ export default class ConfigStore {
    *
    * @returns User ID of AIQ.AWARE
    */
-  getUid (): string {
+  get uid (): string {
     return cookies.get(KEY_UID) || ''
   }
 
@@ -67,7 +67,7 @@ export default class ConfigStore {
    *
    * @returns IID of this site.
    */
-  getIid (): string {
+  get iid (): string {
     const iid = cookies.get(KEY_IID) || ''
     if (iid.length > 0) {
       return iid
