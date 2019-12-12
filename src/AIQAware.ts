@@ -3,7 +3,7 @@ import { from, of } from 'rxjs'
 import { flatMap, map } from 'rxjs/operators'
 
 import ConfigStore from './ConfigStore'
-import Client, { User } from './network/Client'
+import Client, { Device, User } from './network/Client'
 
 const bowser = Bowser.getParser(window.navigator.userAgent)
 
@@ -14,6 +14,7 @@ const APP_TYPE = 'android'
 //   allowed to read outside of `src` (root) directory.
 const version = '0.2.0'
 
+// TODO(arthury): Test and handle errors when requesting.
 export default class AIQAware {
   private configStore: ConfigStore
   private client = new Client()
@@ -23,17 +24,13 @@ export default class AIQAware {
     this.configStore = new ConfigStore(projectId, appId, apiKey)
   }
 
-  private makeUser (): User {
+  private get currentDevice (): Device {
     return {
-      // TODO(arthury): TimeZone from browser.
-      timeZone: 'Asia/Seoul',
-      devices: [{
-        iid: this.configStore.iid,
-        sdk_version: version,
-        os_version: bowser.getOSVersion(),
-        device_model: bowser.getBrowserName(),
-        updated_timestamp: Date.now()
-      }]
+      iid: this.configStore.iid,
+      sdkVersion: version,
+      osVersion: bowser.getOSVersion(),
+      deviceModel: bowser.getBrowserName(),
+      updatedTimestamp: Date.now()
     }
   }
 
@@ -44,10 +41,18 @@ export default class AIQAware {
   // TODO(arthury): Add `userHint` as a parameter.
   async register (): Promise<string> {
     if (this.registered) {
-      return this.configStore.authToken
+      return Promise.resolve(this.configStore.authToken)
     }
-    return of(this.makeUser())
+    return of(this.currentDevice)
       .pipe(
+        map(device => {
+          const user: User = {
+            // TODO(arthury): TimeZone from browser.
+            timeZone: 'Asia/Seoul',
+            devices: [device]
+          }
+          return user
+        }),
         flatMap(user => from(this.client.register(user, {
           projectId: this.configStore.projectId,
           appId: this.configStore.appId,
@@ -68,10 +73,20 @@ export default class AIQAware {
       .toPromise()
   }
 
-  unregister () {
+  async unregister (): Promise<null> {
     if (!this.registered) {
-      return
+      return Promise.resolve(null)
     }
-    this.configStore.clearUserConfigs()
+    return of(this.currentDevice)
+      .pipe(
+        flatMap(() => from(this.client.unregister(this.configStore.uid, {
+          token: this.configStore.authToken
+        }))),
+        map(() => {
+          this.configStore.clearUserConfigs()
+          return null
+        })
+      )
+      .toPromise()
   }
 }

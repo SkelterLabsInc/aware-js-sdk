@@ -4,12 +4,13 @@ import qs from 'qs'
 
 const BASE_URL = 'https://aware.skelterlabs.com/sdk/v1'
 
-interface Device {
+export interface Device {
   iid: string
-  sdk_version: string // sdk version
-  os_version: string
-  device_model: string // browser?
-  updated_timestamp: number
+  sdkVersion: string // sdk version
+  osVersion: string
+  deviceModel: string // browser?
+  updatedTimestamp: number
+  fcmToken?: string
 }
 
 export interface User {
@@ -18,18 +19,24 @@ export interface User {
   clientUserHint?: string
 }
 
-export interface UserResponse extends User {
+interface UserResponse extends User {
   irisAuthToken: string
   uid: string
 }
 
-interface CommonQuery {
-  lang: string
-  country: string
+interface EmptyResponse {
+  // Nothing
+}
+
+interface StudioQuery {
   useStudio?: string
 }
 
-interface PostUserQuery extends CommonQuery {
+interface CommonQuery extends StudioQuery {
+  token: string
+}
+
+interface PostUserQuery extends StudioQuery {
   projectId: string
   appId: string
   appType: string
@@ -37,12 +44,14 @@ interface PostUserQuery extends CommonQuery {
   androidPackageName: string
   iid: string
   clientSecret: string
+  lang: string
+  country: string
 }
 
 /**
  * Set `useStudio` field to the given query as `true` string value.
  */
-function useStudio (query: CommonQuery): CommonQuery {
+function useStudio (query: StudioQuery): StudioQuery {
   query.useStudio = 'true'
   return query
 }
@@ -74,7 +83,11 @@ function toCamelDeep (target: object): object {
   return convertCaseDeep(target, _.camelCase)
 }
 
-async function handleResponse (response: Response) {
+function toSnakeQueryString (query: object): string {
+  return qs.stringify(toSnakeDeep(query))
+}
+
+async function handleJsonResponse (response: Response) {
   const json = await response.json()
   if (response.status >= 400) {
     throw createError(response.status, response.statusText, { response })
@@ -82,18 +95,31 @@ async function handleResponse (response: Response) {
   return toCamelDeep(json)
 }
 
+// TODO(arthury): Server should send any response.
+async function handleEmptyResponse (response: Response) {
+  if (response.status >= 400) {
+    throw createError(response.status, response.statusText, { response })
+  }
+  return {}
+}
+
 // TODO(arthury): Split by resources if more methods are added.
 export default class Client {
-  async register (
-    body: User,
-    query: PostUserQuery
-  ): Promise<UserResponse> {
-    const newQuery = toSnakeDeep(useStudio(query))
+  async register (body: User, query: PostUserQuery): Promise<UserResponse> {
+    const url = `${BASE_URL}/users?${toSnakeQueryString(useStudio(query))}`
     const options: RequestInit = {
       method: 'POST',
       body: JSON.stringify(body)
     }
-    const url = `${BASE_URL}/users?${qs.stringify(newQuery)}`
-    return fetch(url, options).then(handleResponse) as Promise<UserResponse>
+    return fetch(url, options).then(handleJsonResponse) as Promise<UserResponse>
+  }
+
+  async unregister (uid: string, query: CommonQuery): Promise<EmptyResponse> {
+    const url = `${BASE_URL}/users/${uid}/logout?${toSnakeQueryString(useStudio(query))}`
+    const options: RequestInit = {
+      method: 'POST',
+      body: JSON.stringify({})
+    }
+    return fetch(url, options).then(handleEmptyResponse) as Promise<EmptyResponse>
   }
 }
