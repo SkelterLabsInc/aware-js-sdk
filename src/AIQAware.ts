@@ -1,11 +1,15 @@
 import * as Bowser from 'bowser'
+import _ from 'lodash'
 import { from, of } from 'rxjs'
-import { flatMap, map } from 'rxjs/operators'
+import { flatMap, map, mapTo } from 'rxjs/operators'
 
 import ConfigStore from './ConfigStore'
-import Client, { Device, User } from './network/Client'
+import { structured } from './model/structured.pb'
+import Client, { Device } from './network/Client'
 
 const bowser = Bowser.getParser(window.navigator.userAgent)
+
+const { StructuredData } = structured
 
 // TODO(arthury): After server support `js` type, change to `js`.
 const APP_TYPE = 'android'
@@ -45,14 +49,11 @@ export default class AIQAware {
     }
     return of(this.currentDevice)
       .pipe(
-        map(device => {
-          const user: User = {
-            // TODO(arthury): TimeZone from browser.
-            timeZone: 'Asia/Seoul',
-            devices: [device]
-          }
-          return user
-        }),
+        map(device => ({
+          // TODO(arthury): TimeZone from browser.
+          timeZone: 'Asia/Seoul',
+          devices: [device]
+        })),
         flatMap(user => from(this.client.register(user, {
           projectId: this.configStore.projectId,
           appId: this.configStore.appId,
@@ -88,5 +89,61 @@ export default class AIQAware {
         })
       )
       .toPromise()
+  }
+
+  // TODO(arthury): Add `reregister` function which is private and will be called when
+  //  server returns UNAUTHORIZED status code.
+
+  async postCustomSignal (
+    type: structured.StructuredData.FieldType,
+    name: string,
+    value: any,
+    key?: string
+  ): Promise<null> {
+      if (type == StructuredData.FieldType.FIELD_TYPE_NONE) {
+        return Promise.reject(new Error('Invalid field type'))
+      }
+
+      if (!this.registered) {
+        return Promise.reject(new Error('SDK is not registered.'))
+      }
+
+      const field: structured.StructuredData.IField = {}
+      if (key) {
+        field.key = key
+      }
+      if (_.isBoolean(value)) {
+        field.boolValue = value
+      } else if (_.isFinite(value)) {
+        if (value % 1 === 0) {
+          field.intValue = value
+        } else {
+          field.doubleValue = value
+        }
+      } else {
+        field.stringValue = value
+      }
+
+      const message: structured.IStructuredData = {
+        namespace: 'custom-signal.com',
+        name,
+        timestamp: Date.now(),
+        timeZone: 'Asia/Seoul',
+        fieldType: type,
+        fields: [field]
+      }
+
+      return of(StructuredData.create(message))
+        .pipe(
+          map(custom => ({
+            signals: [{ custom }]
+          })),
+          flatMap(signals => from(this.client.postCustomSignal(signals, {
+            iid: this.configStore.iid,
+            token: this.configStore.authToken
+          }))),
+          mapTo(null),
+        )
+        .toPromise()
   }
 }

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "alwaysStrict": true,
+    "allowJs": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "module": "commonjs",
@@ -12,11 +13,11 @@
     "declaration": true,
     "baseUrl": ".",
     "rootDir": "./src",
-    "outDir": "dist",
-    "resolveJsonModule": true
+    "outDir": "dist"
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "src/**/*.js"
   ],
   "exclude": [
     "**/*.test.ts"

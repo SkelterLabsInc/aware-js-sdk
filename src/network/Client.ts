@@ -2,6 +2,8 @@ import createError from 'http-errors'
 import _ from 'lodash'
 import qs from 'qs'
 
+import { structured } from '../model/structured.pb'
+
 const BASE_URL = 'https://aware.skelterlabs.com/sdk/v1'
 
 export interface Device {
@@ -13,10 +15,18 @@ export interface Device {
   fcmToken?: string
 }
 
-export interface User {
+interface User {
   timeZone: string
   devices: Device[]
   clientUserHint?: string
+}
+
+interface Signal {
+  custom: structured.StructuredData
+}
+
+interface Signals {
+  signals: Signal[]
 }
 
 interface UserResponse extends User {
@@ -46,6 +56,10 @@ interface PostUserQuery extends StudioQuery {
   clientSecret: string
   lang: string
   country: string
+}
+
+interface PostSignalsQuery extends CommonQuery {
+  iid: string
 }
 
 /**
@@ -119,6 +133,15 @@ export default class Client {
     const options: RequestInit = {
       method: 'POST',
       body: JSON.stringify({})
+    }
+    return fetch(url, options).then(handleEmptyResponse) as Promise<EmptyResponse>
+  }
+
+  async postCustomSignal (body: Signals, query: PostSignalsQuery): Promise<EmptyResponse> {
+    const url = `${BASE_URL}/signals?${toSnakeQueryString(useStudio(query))}`
+    const options: RequestInit = {
+      method: 'POST',
+      body: JSON.stringify(body)
     }
     return fetch(url, options).then(handleEmptyResponse) as Promise<EmptyResponse>
   }

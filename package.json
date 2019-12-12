@@ -7,8 +7,13 @@
   "license": "Apache-2.0",
   "private": true,
   "scripts": {
-    "build": "rm -rf dist *.tsbuildinfo && tsc --build tsconfig.json",
-    "build:watch": "tsc --build tsconfig.json --watch"
+    "build": "yarn clean && yarn protoc && tsc --build tsconfig.json",
+    "build:watch": "tsc --build tsconfig.json --watch",
+    "clean": "rm -rf dist proto src/model",
+    "protoc": "yarn protocp && mkdir -p src/model && yarn protocjs && yarn protocts",
+    "protocjs": "pbjs --target static-module --wrap commonjs --out src/model/structured.pb.js proto/structured.proto",
+    "protocts": "pbts --out src/model/structured.pb.d.ts src/model/structured.pb.js",
+    "protocp": "[ -f ../../onion/proto/structured.proto ] && mkdir -p proto && cp ../../onion/proto/structured.proto proto/"
   },
   "dependencies": {
     "@types/http-errors": "^1.6.3",
@@ -22,5 +27,8 @@
     "rxjs": "^6.5.3",
     "universal-cookie": "^4.0.2",
     "uuid": "^3.3.3"
+  },
+  "devDependencies": {
+    "protobufjs": "^6.8.8"
   }
 }
