@@ -5,7 +5,9 @@ import AIQAware, { FieldType } from 'aware-sdk'
 
 import logo from './logo.svg'
 
-const aware = new AIQAware('dfFNXMtxUH2', 'e28EhjiBObs', 'ywlrbsETnSAWy7rYSbzt-iFsBWCz_LHI')
+const aware = new AIQAware(
+  'dfFNXMtxUH2', 'e28EhjiBObs', 'ywlrbsETnSAWy7rYSbzt-iFsBWCz_LHI',
+  'custom-signal.com')
 
 function App () {
   const [message, setMessage] = useState('')

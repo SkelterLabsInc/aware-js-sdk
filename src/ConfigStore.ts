@@ -4,6 +4,8 @@ import uuid from 'uuid/v4'
 const KEY_PROJECT_ID = 'PROJECT_ID'
 const KEY_APP_ID = 'APP_ID'
 const KEY_API_KEY = 'API_KEY'
+// TODO(arthury): Host URL should not be given from client. It should be extracted from browser.
+const KEY_HOSTNAME = 'HOSTNAME'
 const KEY_AUTH_TOKEN = 'AUTH_TOKEN'
 const KEY_UID = 'UID'
 const KEY_IID = 'IID'
@@ -22,10 +24,11 @@ interface User {
  * ConfigStore stores all configs of AIQ.AWARE SDK.
  */
 export default class ConfigStore {
-  constructor (projectId: string, appId: string, apiKey: string) {
+  constructor (projectId: string, appId: string, apiKey: string, hostname: string) {
     cookies.set(KEY_PROJECT_ID, projectId)
     cookies.set(KEY_APP_ID, appId)
     cookies.set(KEY_API_KEY, apiKey)
+    cookies.set(KEY_HOSTNAME, hostname)
   }
 
   /**
@@ -49,6 +52,10 @@ export default class ConfigStore {
 
   get apiKey (): string {
     return cookies.get(KEY_API_KEY)
+  }
+
+  get hostname (): string {
+    return cookies.get(KEY_HOSTNAME)
   }
 
   /**

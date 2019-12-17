@@ -24,8 +24,8 @@ export default class AIQAware {
   private client = new Client()
 
   // TODO(arthury): Load configs from file directly.
-  constructor (projectId: string, appId: string, apiKey: string) {
-    this.configStore = new ConfigStore(projectId, appId, apiKey)
+  constructor (projectId: string, appId: string, apiKey: string, hostname: string) {
+    this.configStore = new ConfigStore(projectId, appId, apiKey, hostname)
   }
 
   private get currentDevice (): Device {
@@ -59,7 +59,7 @@ export default class AIQAware {
           appId: this.configStore.appId,
           appType: APP_TYPE,
           // TODO(arthury): After support domain, use window.location.hostname
-          androidPackageName: 'custom-signal.com',
+          androidPackageName: this.configStore.hostname,
           iid: this.configStore.iid,
           clientSecret: this.configStore.apiKey,
           // TODO(arthury): Extract language and country code from browser.
@@ -125,7 +125,6 @@ export default class AIQAware {
       }
 
       const message: structured.IStructuredData = {
-        namespace: 'custom-signal.com',
         name,
         timestamp: Date.now(),
         timeZone: 'Asia/Seoul',
