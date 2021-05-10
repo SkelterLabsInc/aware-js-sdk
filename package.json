@@ -23,7 +23,7 @@
     "@types/uuid": "^3.4.6",
     "bowser": "^2.7.0",
     "http-errors": "^1.7.3",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "qs": "^6.9.1",
     "rxjs": "^6.5.3",
     "universal-cookie": "^4.0.2",
